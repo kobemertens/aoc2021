@@ -1,6 +1,8 @@
 # makefile thankfully stolen from https://github.com/ajuvercr/aoc-2021/blob/master/Makefile
 
 CC := c++
+CXX_STANDARD := c++20
+CXX_FLAGS := -std=$(CXX_STANDARD) -Wall -Werror
 DAY ?= $(shell date '+%d')
 TARGET_EXEC ?= $(DAY).out
 
@@ -15,12 +17,12 @@ OBJS := $(EXEC:./%.cpp=$(BUILD_DIR)/%.o) $(LIBS:./%.cpp=$(BUILD_DIR)/%.o)
 DEPS := $(LIBS:%.cpp=%.h)
 
 $(BUILD_DIR)/$(TARGET_EXEC): $(OBJS)
-	$(CC) $(OBJS) -o $@ $(LDFLAGS)
+	$(CC) $(OBJS) $(CXX_FLAGS) -o $@ $(LDFLAGS)
 
 # cpp source
 $(BUILD_DIR)/%.o: %.cpp $(DEPS)
 	$(MKDIR_P) $(dir $@)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
+	$(CC) $(CXX_FLAGS) $(CFLAGS) -c $< -o $@
 
 .PHONY: clean
 
