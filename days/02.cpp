@@ -22,18 +22,17 @@ Depth parse_instruction(const std::string& s)
     auto split = split_on(s, ' ');
 
     auto command = split[0];
-    std::cout << command << std::endl;
-    std::cout << split[1] << std::endl;
     auto number = parse_to_int(split[1]);
+
     if (command == "forward")
-    {
-        std::cout << " OK " << std::endl;
         return {number, 0};
-    }
+
     else if (command == "down")
         return {0, number};
+
     else if (command == "up")
         return {0, -number};
+
     else
     {
         std::cout << "This should not happen" << std::endl;
@@ -49,7 +48,6 @@ int part_1(const std::vector<std::string>& lines)
         Depth{0, 0},
         [](Depth d, std::string s){
             auto delta = parse_instruction(s);
-            std::cout << delta.x << std::endl;
             return Depth{d.x + delta.x, d.depth + delta.depth};
         }
     );
