@@ -33,3 +33,23 @@ std::vector<OutType> zip_with3(const std::vector<ValType1>& v1, const std::vecto
 
 template <typename ValType>
 std::vector<ValType> shift_left(std::vector<int>& v, unsigned int offset);
+
+template<typename T>
+void print_vector(const std::vector<T>& v)
+{
+    std::cout << "[" << v[0];
+    for (unsigned int i = 1; i < v.size(); i++)
+    {
+        std::cout << ", ";
+        std::cout << v[i];
+    }
+
+    std::cout << "]";
+    std::cout << std::endl;
+}
+
+template<typename T>
+void print(T t)
+{
+    std::cout << t << std::endl;
+}
