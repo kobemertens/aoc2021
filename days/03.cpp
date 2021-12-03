@@ -4,7 +4,7 @@
 
 std::vector<int> create_histogram(const std::vector<std::string>& lines)
 {
-    std::vector<int> counts(12);
+    std::vector<int> counts(lines[0].length());
     int i;
     for (auto line : lines)
     {
@@ -12,9 +12,8 @@ std::vector<int> create_histogram(const std::vector<std::string>& lines)
         for (auto c : line)
         {
             if (c == '1')
-            {
                 counts[i] += 1;
-            }
+
             i++;
         }
     }
@@ -50,10 +49,9 @@ std::string get_oxy(const std::vector<std::string>& lines)
 
 int main()
 {
-    auto lines = get_lines_from_file("input_files/03.txt");
-    auto counts = create_histogram(lines);
-    get_oxy(lines);
-    get_oxy(lines);
+    // auto lines = get_lines_from_file("input_files/03.txt");
+    // auto counts = create_histogram(lines);
+    // get_oxy(lines);
 
     return 0;
 }
