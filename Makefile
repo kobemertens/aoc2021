@@ -2,7 +2,7 @@
 
 CC := c++
 CXX_STANDARD := c++20
-CXX_FLAGS := -std=$(CXX_STANDARD) -Wall -Werror
+CXX_FLAGS := -std=$(CXX_STANDARD) -Wall -Werror -fconcepts
 DAY ?= $(shell date '+%d')
 TARGET_EXEC ?= $(DAY).out
 

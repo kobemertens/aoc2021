@@ -49,9 +49,9 @@ std::string get_oxy(const std::vector<std::string>& lines)
 
 int main()
 {
-    // auto lines = get_lines_from_file("input_files/03.txt");
-    // auto counts = create_histogram(lines);
-    // get_oxy(lines);
+    auto lines = get_lines_from_file("input_files/03.txt");
+    auto counts = create_histogram(lines);
+    get_oxy(lines);
 
     return 0;
 }

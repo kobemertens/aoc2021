@@ -45,11 +45,6 @@ split_on(const std::string& s, char delim /*='\n'*/)
 
     seglist.push_back(s.substr(last, next-last));
 
-    for(auto tok : seglist)
-    {
-        std::cout << "TOKEN" << tok << std::endl;
-    }
-
     return seglist;
 }
 
