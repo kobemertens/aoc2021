@@ -1,5 +1,5 @@
-#include "../lib/parsers.h"
-#include "../lib/utils.h"
+#include "../../lib/parsers.h"
+#include "../../lib/utils.h"
 #include <optional>
 #include <fstream>
 #include <iostream>
@@ -7,8 +7,6 @@
 
 using Point = std::pair<int, int>;
 using Line = std::pair<Point, Point>;
-
-
 
 std::optional<Line> parse_line(std::ifstream& s)
 {
@@ -106,7 +104,7 @@ int part(std::vector<Line> lines, bool part_1)
 
 int main()
 {
-    std::ifstream s("input_files/05.txt");
+    std::ifstream s("days/day05/input.txt");
     std::vector<Line> lines = parse_lines(s);
     std::cout << "Part 1: " << part(lines, true) << std::endl;
     std::cout << "Part 2: " << part(lines, false) << std::endl;

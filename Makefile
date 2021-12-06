@@ -10,8 +10,7 @@ BUILD_DIR ?= ./build
 LIB_DIR ?= ./lib
 SRC_DIR ?= ./days
 
-
-EXEC := $(SRC_DIR)/$(DAY).cpp
+EXEC := $(SRC_DIR)/day$(DAY)/main.cpp
 LIBS := $(shell find $(LIB_DIR) -type f -name "*.cpp")
 OBJS := $(EXEC:./%.cpp=$(BUILD_DIR)/%.o) $(LIBS:./%.cpp=$(BUILD_DIR)/%.o)
 DEPS := $(LIBS:%.cpp=%.h)
