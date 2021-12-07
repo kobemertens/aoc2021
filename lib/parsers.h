@@ -99,3 +99,20 @@ std::optional<ResultType> any_of(Parser<ResultType> p1, Parser<ResultType> p2, s
     else
         return p2(s);
 }
+
+std::vector<int> parse_comma_separated_numbers(std::ifstream& s)
+{
+    return repeat_until_failure<int>(
+        [](std::ifstream& s){
+            auto n = parse_number(s);
+            std::optional<int> out{};
+            if(!n.has_value())
+                return out;
+
+            item(s);
+
+            return n;
+        },
+        s
+    );
+}

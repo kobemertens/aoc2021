@@ -33,9 +33,7 @@ unsigned long part(const std::vector<int>& numbers, unsigned int iterations)
 
         // shift numbers
         for(int i = 1; i < 9; i++)
-        {
             a[i - 1] = a[i];
-        }
 
         a[6] += num_pregnant;
         a[8] = num_pregnant;
@@ -44,12 +42,10 @@ unsigned long part(const std::vector<int>& numbers, unsigned int iterations)
     unsigned long sum = 0;
 
     for (unsigned int i = 0; i < 9; i++)
-    {
         sum += a[i];
-    }
+
 
     return sum;
-
 }
 
 int main()
