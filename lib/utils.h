@@ -37,6 +37,12 @@ std::vector<ValType> shift_left(std::vector<int>& v, unsigned int offset);
 template<typename T>
 void print_vector(const std::vector<T>& v)
 {
+    if(v == std::vector<T>{})
+    {
+        std::cout << "[]" << std::endl;
+        return;
+    }
+
     std::cout << "[" << v[0];
     for (unsigned int i = 1; i < v.size(); i++)
     {

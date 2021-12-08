@@ -3,6 +3,7 @@
 #include <vector>
 #include <ctype.h>
 #include <functional>
+#include <iostream>
 
 // template <typename T>
 // concept Parser = requires (T p) {
@@ -20,11 +21,29 @@ std::optional<char> item(std::ifstream& s)
     else      return {};
 }
 
+bool is_whitespace(char c)
+{
+    return c == ' ' || c == '\n' || c == '\t';
+}
+
+std::optional<std::string> word(std::ifstream& s)
+{
+    std::string out;
+    char c = 0;
+    while(!is_whitespace(c = s.peek()) && s.peek() != EOF && isalpha(c))
+    {
+        std::cout << (int) c << std::endl;
+        s.get(c);
+        out.push_back(c);
+    }
+
+    std::cout << "Word Returned" << std::endl;
+
+    return out;
+}
+
 std::optional<char> space(std::ifstream& s)
 {
-    auto is_whitespace = [](char c){
-        return c == ' ' || c == '\n' || c == '\t';
-    };
     char next_char = s.peek();
     if(!is_whitespace(next_char))
         return {};
