@@ -24,7 +24,7 @@ $(BUILD_DIR)/%.o: %.cpp $(DEPS)
 	$(MKDIR_P) $(dir $@)
 	$(CC) $(CXX_FLAGS) $(CFLAGS) -c $< -o $@
 
-.PHONY: clean
+.PHONY: clean run
 
 run: $(BUILD_DIR)/$(TARGET_EXEC)
 	@echo "-------------------------------------------------------------"
