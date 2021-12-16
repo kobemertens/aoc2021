@@ -44,9 +44,6 @@ unsigned long parse_bitstring_to_int(std::stringstream& bitstring, unsigned int 
         out |= next == '1';
     }
 
-    if (!bitstring)
-        std::cout << "WHUT" << std::endl;
-
     return out;
 }
 
@@ -132,15 +129,11 @@ size_t parse_operator(std::stringstream& ss, Expression& expr)
     {
         auto size_in_bits = parse_bitstring_to_int(ss, 15);
         total_num_bits_parsed += 15;
-        std::cout << "Size in bits" << size_in_bits << std::endl;
         size_t num_bits_parsed = 0;
         while (num_bits_parsed < size_in_bits)
         {
-            Expression child{};
-            std::cout << "OKOKO" << std::endl;
-            num_bits_parsed += parse_expression(ss, child);
-            std::cout << "num bits parsed: " << num_bits_parsed << std::endl;
-            expr.children.push_back(child);
+            expr.children.emplace_back();
+            num_bits_parsed += parse_expression(ss, expr.children.back());
         }
         total_num_bits_parsed += num_bits_parsed;
     }
@@ -148,13 +141,10 @@ size_t parse_operator(std::stringstream& ss, Expression& expr)
     {
         auto num_packets = parse_bitstring_to_int(ss, 11);
         total_num_bits_parsed += 11;
-        std::cout << "Num packets" << num_packets << std::endl;
         for (unsigned int i = 0; i < num_packets; i++)
         {
-            Expression child{};
-            total_num_bits_parsed += parse_expression(ss, child);
-            std::cout << "num bits parsed2: " << total_num_bits_parsed << std::endl;
-            expr.children.push_back(child);
+            expr.children.emplace_back();
+            total_num_bits_parsed += parse_expression(ss, expr.children.back());
         }
     }
     else
@@ -175,11 +165,6 @@ size_t parse_expression(std::stringstream& ss, Expression& expr)
         packet_length += parse_operator(ss, expr);
 
     return packet_length;
-}
-
-std::vector<Expression> bitstring_to_expressions(const std::string& bitstring)
-{
-    return {};
 }
 
 size_t sum_version_numbers(const Expression& expr)
@@ -260,7 +245,6 @@ int main()
 {
     std::ifstream s{"days/day16/input.txt"};
     auto bitstream = hex_stream_to_bitstream(s);
-    // std::cout << bitstream.rdbuf() << std::endl;
     Expression expr{};
     parse_expression(bitstream, expr);
     std::cout << "Part 1: " << sum_version_numbers(expr) << std::endl;
