@@ -4,10 +4,17 @@
 #include <variant>
 #include <sstream>
 
+
 enum class PacketType
 {
+    Sum,
+    Product,
+    Minimum,
+    Maximum,
     Literal,
-    Operator
+    GreaterThan,
+    LessThan,
+    EqualTo
 };
 
 struct Expression
@@ -18,14 +25,11 @@ struct Expression
     std::vector<Expression> children{};
 };
 
+size_t parse_expression(std::stringstream& ss, Expression& expr);
+
 std::ostream& operator<<(std::ostream& os, const Expression& expr)
 {
     return os << "Expr(version=" << expr.version << ", type=" << (int) expr.type << ", literal_value=" << expr.value << ")";
-}
-
-PacketType typeid_to_packettype(unsigned int type_id)
-{
-    return (type_id == 4 ? PacketType::Literal : PacketType::Operator);
 }
 
 unsigned long parse_bitstring_to_int(std::stringstream& bitstring, unsigned int num_chars_to_parse)
@@ -39,6 +43,9 @@ unsigned long parse_bitstring_to_int(std::stringstream& bitstring, unsigned int 
         out <<= 1;
         out |= next == '1';
     }
+
+    if (!bitstring)
+        std::cout << "WHUT" << std::endl;
 
     return out;
 }
@@ -69,10 +76,12 @@ std::string hex_char_to_bitstring(char hex_char)
     }
 }
 
-void parse_header(std::stringstream& ss, Expression& expr)
+size_t parse_header(std::stringstream& ss, Expression& expr)
 {
     expr.version = parse_bitstring_to_int(ss, 3);
-    expr.type = typeid_to_packettype(parse_bitstring_to_int(ss, 3));
+    expr.type = static_cast<PacketType>(parse_bitstring_to_int(ss, 3));
+
+    return 6;
 }
 
 std::stringstream hex_stream_to_bitstream(std::ifstream& s)
@@ -85,7 +94,7 @@ std::stringstream hex_stream_to_bitstream(std::ifstream& s)
     return bitstream;
 }
 
-void parse_literal(std::stringstream& ss, Expression& expr)
+size_t parse_literal(std::stringstream& ss, Expression& expr)
 {
     char cont_bit;
     std::stringstream dec_repr_stream;
@@ -110,34 +119,62 @@ void parse_literal(std::stringstream& ss, Expression& expr)
         expr.value |= next == '1';
     }
     num_parts++;
-    ss.ignore()
+
+    return num_parts * 5;
 }
 
-void parse_operator(std::stringstream& ss, Expression& expr)
+size_t parse_operator(std::stringstream& ss, Expression& expr)
 {
     char length_type_bit;
     ss >> length_type_bit;
-    int length_type = length_type_bit == '1';
-}
-
-Expression parse_expression(std::stringstream& ss)
-{
-    Expression expr{};
-    parse_header(ss, expr);
-    switch (expr.type)
+    size_t total_num_bits_parsed = 1; // we read the length_type_bit
+    if (length_type_bit == '0')
     {
-    case PacketType::Literal:
-        parse_literal(ss, expr);
-        break;
-    case PacketType::Operator:
-        parse_operator(ss, expr);
-        break;
-    default:
-        std::cout << "Should not happen" << std::endl;
-        break;
+        auto size_in_bits = parse_bitstring_to_int(ss, 15);
+        total_num_bits_parsed += 15;
+        std::cout << "Size in bits" << size_in_bits << std::endl;
+        size_t num_bits_parsed = 0;
+        while (num_bits_parsed < size_in_bits)
+        {
+            Expression child{};
+            std::cout << "OKOKO" << std::endl;
+            num_bits_parsed += parse_expression(ss, child);
+            std::cout << "num bits parsed: " << num_bits_parsed << std::endl;
+            expr.children.push_back(child);
+        }
+        total_num_bits_parsed += num_bits_parsed;
+    }
+    else if (length_type_bit == '1')
+    {
+        auto num_packets = parse_bitstring_to_int(ss, 11);
+        total_num_bits_parsed += 11;
+        std::cout << "Num packets" << num_packets << std::endl;
+        for (unsigned int i = 0; i < num_packets; i++)
+        {
+            Expression child{};
+            total_num_bits_parsed += parse_expression(ss, child);
+            std::cout << "num bits parsed2: " << total_num_bits_parsed << std::endl;
+            expr.children.push_back(child);
+        }
+    }
+    else
+    {
+        std::cout << "This should not happen, length type bit is: " << (char) length_type_bit << "\n";
     }
 
-    return expr;
+    return total_num_bits_parsed;
+}
+
+size_t parse_expression(std::stringstream& ss, Expression& expr)
+{
+    size_t packet_length = 0;
+    packet_length += parse_header(ss, expr);
+    if (expr.type == PacketType::Literal)
+        packet_length += parse_literal(ss, expr);
+    else
+        packet_length += parse_operator(ss, expr);
+
+    return packet_length;
 }
 
 std::vector<Expression> bitstring_to_expressions(const std::string& bitstring)
@@ -145,17 +182,88 @@ std::vector<Expression> bitstring_to_expressions(const std::string& bitstring)
     return {};
 }
 
-std::vector<Expression> expressions_from_hex_string(std::ifstream& s)
+size_t sum_version_numbers(const Expression& expr)
 {
-    auto bitstream = hex_stream_to_bitstream(s);
-    auto expr = parse_expression(bitstream);
-    std::cout << expr << std::endl;
-    return {};
+    size_t sum = expr.version;
+    for ( auto child : expr.children)
+        sum += sum_version_numbers(child);
+
+    return sum;
+}
+
+unsigned long evaluate(const Expression& expr)
+{
+    if (expr.type == PacketType::Literal)
+    {
+        return expr.value;
+    }
+    else if (expr.type == PacketType::Sum)
+    {
+        unsigned long sum = 0;
+        for (auto child : expr.children)
+            sum += evaluate(child);
+
+        return sum;
+    }
+    else if (expr.type == PacketType::Product)
+    {
+        unsigned long prod = 1;
+        for (auto child : expr.children)
+            prod *= evaluate(child);
+
+        return prod;
+    }
+    else if ( expr.type == PacketType::Minimum)
+    {
+        unsigned long min = UINT32_MAX;
+        for (auto child : expr.children)
+        {
+            auto val = evaluate(child);
+            if (val < min)
+                min = val;
+        }
+
+        return min;
+    }
+    else if ( expr.type == PacketType::Maximum)
+    {
+        unsigned long max = 0;
+        for (auto child : expr.children)
+        {
+            auto val = evaluate(child);
+            if (val > max)
+                max = val;
+        }
+
+        return max;
+    }
+    else if (expr.type == PacketType::GreaterThan)
+    {
+        return evaluate(expr.children[0]) > evaluate(expr.children[1]);
+    }
+    else if (expr.type == PacketType::LessThan)
+    {
+        return evaluate(expr.children[0]) < evaluate(expr.children[1]);
+    }
+    else if (expr.type == PacketType::EqualTo)
+    {
+        return evaluate(expr.children[0]) == evaluate(expr.children[1]);
+    }
+    else
+    {
+        std::cout << "This can not happen" << std::endl;
+        return 0;
+    }
 }
 
 int main()
 {
     std::ifstream s{"days/day16/input.txt"};
-    expressions_from_hex_string(s);
+    auto bitstream = hex_stream_to_bitstream(s);
+    // std::cout << bitstream.rdbuf() << std::endl;
+    Expression expr{};
+    parse_expression(bitstream, expr);
+    std::cout << "Part 1: " << sum_version_numbers(expr) << std::endl;
+    std::cout << "Part 2: " << evaluate(expr) << std::endl;
     return 0;
 }
