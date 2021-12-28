@@ -1,23 +1,20 @@
-#include "../../lib/parsers.h"
-#include "../../lib/utils.h"
 #include <iostream>
+#include <fstream>
+#include <vector>
 #include <cstring>
 
 std::vector<int> get_numbers_from_file(std::ifstream& s)
 {
-    return repeat_until_failure<int>(
-        [](std::ifstream& s){
-            auto n = parse_number(s);
-            std::optional<int> out{};
-            if(!n.has_value())
-                return out;
+    std::vector<int> v;
+    int i;
 
-            item(s);
+    while (s >> i)
+    {
+        v.push_back(i);
+        s.ignore();
+    }
 
-            return n;
-        },
-        s
-    );
+    return v;
 }
 
 unsigned long part(const std::vector<int>& numbers, unsigned int iterations)
